@@ -30,10 +30,11 @@ public class QuestionController {
 
     @GetMapping()
     public Flux<QuestionResponseDTO> getAllQuestions(   @RequestParam(required = false) String cursor,
-                                                        @RequestParam(defaultValue = "0") int page,
+//                                                      @RequestParam(defaultValue = "0") int page, not required in cursor based pagination
+                                                        //because here we are removing Offset concept
                                                         @RequestParam(defaultValue = "10") int size) {
 
-        return questionService.getAllQuestions(cursor, page,size)
+        return questionService.getAllQuestions(cursor, size)
                 .doOnError(error -> System.out.println("Error fetching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions fetched successfully"));
 
