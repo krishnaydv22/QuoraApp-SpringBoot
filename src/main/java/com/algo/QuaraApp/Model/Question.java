@@ -32,6 +32,8 @@ public class Question {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    private Integer views;
+
     @LastModifiedDate
     private LocalDateTime updatedAt;
 }
