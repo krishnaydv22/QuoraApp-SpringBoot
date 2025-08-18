@@ -1,11 +1,34 @@
-HELP.md
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+
+### Logs ###
+*.log
+
+### Heap dumps ###
+*.hprof
+
+### OS generated files ###
+.DS_Store
+Thumbs.db
+
+### Maven ###
+target/
+
+### Gradle ###
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### STS ###
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### Eclipse/STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -14,17 +37,6 @@ build/
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,3 +47,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Misc ###
+HELP.md
