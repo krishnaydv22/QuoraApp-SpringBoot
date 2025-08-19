@@ -30,7 +30,7 @@ public class QuestionIndexService implements IQuestionIndexService{
 
     @Override
     public Flux<QuestionElasticDocumentResponseDTO> searchQuestionByElasticSearch(String query) {
-        return questionDocumentRepository.findByTitleContainingOrContentContaining(query,query)
+        return questionDocumentRepository.findByTitleContainingOrContentContaining(query)
                 .map(QuestionElasticDocumentAdapter::toDto);
     }
 }
