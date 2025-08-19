@@ -1,7 +1,10 @@
 package com.algo.QuaraApp.controller;
 
+import com.algo.QuaraApp.DTO.QuestionElasticDocumentResponseDTO;
 import com.algo.QuaraApp.DTO.QuestionRequestDTO;
 import com.algo.QuaraApp.DTO.QuestionResponseDTO;
+import com.algo.QuaraApp.Model.QuestionElasticDocument;
+import com.algo.QuaraApp.services.IQuestionIndexService;
 import com.algo.QuaraApp.services.IQuestionService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +17,8 @@ import reactor.core.publisher.Mono;
 public class QuestionController {
 
     private final IQuestionService questionService;
+
+    private final IQuestionIndexService questionIndexService;
 
     @PostMapping
     public Mono<QuestionResponseDTO> createQuestion(@RequestBody QuestionRequestDTO dto){
@@ -60,5 +65,13 @@ public class QuestionController {
                                                        @RequestParam(defaultValue = "10") int size
     ) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @GetMapping("/elasticsearch")
+    public Flux<QuestionElasticDocumentResponseDTO> searchQuestionsByElasticsearch(@RequestParam String query) {
+        return questionIndexService.searchQuestionByElasticSearch(query)
+                .doOnError(error -> System.out.println("Error fetching questions: " + error))
+                .doOnComplete(() -> System.out.println("Questions fetched successfully"));
+
     }
 }
