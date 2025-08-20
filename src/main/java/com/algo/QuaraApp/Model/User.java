@@ -1,5 +1,7 @@
 package com.algo.QuaraApp.Model;
 
-@Enti
+import jakarta.persistence.Entity;
+
+@Entity
 public class User {
 }
