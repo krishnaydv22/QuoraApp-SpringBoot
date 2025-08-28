@@ -10,6 +10,7 @@ public class QuestionAdapter {
 
     public static  Question toQuestionEntity(QuestionRequestDTO dto){
         return Question.builder()
+                .authorId(dto.getAuthorId())
                 .content(dto.getContent())
                 .title(dto.getTitle())
                 .createdAt(LocalDateTime.now())
@@ -19,6 +20,7 @@ public class QuestionAdapter {
 
     public static QuestionResponseDTO toQuestionResponseDto(Question entity) {
         return QuestionResponseDTO.builder()
+                .authorId(entity.getAuthorId())
                 .id(entity.getId())
                 .content(entity.getContent())
                 .title(entity.getTitle())

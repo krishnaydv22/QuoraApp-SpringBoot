@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface QuestionRepository extends ReactiveMongoRepository<Question,String> {
@@ -19,6 +20,12 @@ public interface QuestionRepository extends ReactiveMongoRepository<Question,Str
     Flux<Question> findByCreatedAtGreaterThanOrderByCreatedAtAsc(LocalDateTime cursor, Pageable pageable);
 
     Flux<Question> findTop10ByOrderByCreatedAtAsc();
+
+    Flux<Question>  findByAuthorId(Integer id);
+
+    Flux<Question> findByAuthorIdIn(List<Integer> authorIds); // this is for batch processing, avoids n + 1 query problem
+    // calls -->     //SELECT * FROM questions WHERE author_id IN (...);
+
 
 
 //    Flux<Question> findByAuthorId(String authorId);

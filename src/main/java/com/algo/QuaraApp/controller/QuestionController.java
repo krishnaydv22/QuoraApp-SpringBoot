@@ -69,7 +69,8 @@ public class QuestionController {
 
     @GetMapping("/elasticsearch")
     public Flux<QuestionElasticDocumentResponseDTO> searchQuestionsByElasticsearch(@RequestParam String query) {
-        return questionIndexService.searchQuestionByElasticSearch(query)
+        return
+                questionIndexService.searchQuestionByElasticSearch(query)
                 .doOnError(error -> System.out.println("Error fetching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions fetched successfully"));
 

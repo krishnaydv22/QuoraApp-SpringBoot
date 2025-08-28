@@ -2,23 +2,56 @@ package com.algo.QuaraApp.services;
 
 import com.algo.QuaraApp.DTO.AnswerRequestDTO;
 import com.algo.QuaraApp.DTO.AnswerResponseDTO;
+import com.algo.QuaraApp.Model.Answer;
 import com.algo.QuaraApp.adapter.AnswerAdapter;
 import com.algo.QuaraApp.adapter.QuestionAdapter;
+import com.algo.QuaraApp.events.FeedGenerationEvent;
+import com.algo.QuaraApp.events.ViewCountEvent;
+import com.algo.QuaraApp.producers.KafkaEventProducer;
 import com.algo.QuaraApp.repository.AnswerRepository;
+import com.algo.QuaraApp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class AnswerService implements IAnswerService{
 
     private final AnswerRepository answerRepository;
+
+    private final UserRepository userRepository;
+
+    private final KafkaEventProducer kafkaEventProducer;
     @Override
     public Mono<AnswerResponseDTO> createAnswer(AnswerRequestDTO answerRequestDTO) {
-        return answerRepository.save(AnswerAdapter.toEntity(answerRequestDTO))
-                .map(AnswerAdapter::toDto);
+        return userRepository.findById(answerRequestDTO.getAuthorId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                        "User with id " + answerRequestDTO.getAuthorId() + " does not exist"
+                )))
+                .flatMap(user -> {
+                    // Convert DTO to entity
+                    Answer answerEntity = AnswerAdapter.toEntity(answerRequestDTO);
+
+                    // Save the answer and map to DTO
+                    return answerRepository.save(answerEntity)
+                            .map(AnswerAdapter::toDto)
+                            .doOnSuccess(response -> {
+                                System.out.println("Answer created: " + response);
+
+                                // Publish feed generation event to Kafka
+                                FeedGenerationEvent feedGenerationEvent = new FeedGenerationEvent();
+                                feedGenerationEvent.setTargetId(response.getId());
+                                feedGenerationEvent.setTargetType("ANSWER");
+                                feedGenerationEvent.setCreatedAt(response.getCreatedAt());
+
+                                kafkaEventProducer.publishFeedGenerationEvent(feedGenerationEvent);
+                            })
+                            .doOnError(error -> System.out.println("Error creating Answer: " + error.getMessage()));
+                });
     }
 
     @Override

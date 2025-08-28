@@ -9,6 +9,9 @@ import lombok.Data;
 @Builder
 public class QuestionRequestDTO {
 
+    private String authorId;
+
+
     @NotBlank(message = "Title is required")
     @Size(min = 10, max = 100, message = "Title must be between 10 and 100 characters")
     private String title;

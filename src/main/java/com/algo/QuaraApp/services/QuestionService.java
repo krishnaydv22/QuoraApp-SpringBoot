@@ -4,10 +4,13 @@ import com.algo.QuaraApp.DTO.QuestionRequestDTO;
 import com.algo.QuaraApp.DTO.QuestionResponseDTO;
 import com.algo.QuaraApp.Model.Question;
 import com.algo.QuaraApp.adapter.QuestionAdapter;
+import com.algo.QuaraApp.adapter.UserAdapter;
+import com.algo.QuaraApp.events.FeedGenerationEvent;
 import com.algo.QuaraApp.events.ViewCountEvent;
 import com.algo.QuaraApp.exception.QuestionNotFoundException;
 import com.algo.QuaraApp.producers.KafkaEventProducer;
 import com.algo.QuaraApp.repository.QuestionRepository;
+import com.algo.QuaraApp.repository.UserRepository;
 import com.algo.QuaraApp.utils.CursorUtils;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import java.time.LocalDateTime;
 public class QuestionService implements IQuestionService{
 
     private final QuestionRepository questionRepository;
+    private final UserRepository userRepository;
     private final KafkaEventProducer kafkaEventProducer;
 
     private final QuestionIndexService questionIndexService;
@@ -34,18 +38,41 @@ public class QuestionService implements IQuestionService{
     public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
 
 
-        Question question =   QuestionAdapter.toQuestionEntity(questionRequestDTO);
-
-        return questionRepository.save(question)
-                .map(savedQuestion -> {
-                    questionIndexService.createQuestionIndex(savedQuestion); //dumping question to elastic search
-                    return QuestionAdapter.toQuestionResponseDto(savedQuestion);
+//        Question question =   QuestionAdapter.toQuestionEntity(questionRequestDTO);
 
 
+
+
+       //dumping question to elastic search
+        // First, check if the user exists
+        return userRepository.findById(questionRequestDTO.getAuthorId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                        "User with id " + questionRequestDTO.getAuthorId() + " does not exist"
+                )))
+                .flatMap(user -> {
+                    // Convert request DTO to Question entity
+                    Question question = QuestionAdapter.toQuestionEntity(questionRequestDTO);
+
+                    // Save question and return response DTO
+                    return questionRepository.save(question)
+                            .map(savedQuestion -> {
+                                // Dump question to Elasticsearch
+                                questionIndexService.createQuestionIndex(savedQuestion);
+                                return QuestionAdapter.toQuestionResponseDto(savedQuestion);
+                            })
+                            .doOnSuccess(response -> {
+                                System.out.println("Question created successfully: " + response);
+
+                                // Publish feed generation event to Kafka
+                                FeedGenerationEvent feedGenerationEvent = new FeedGenerationEvent();
+                                feedGenerationEvent.setTargetId(response.getId());
+                                feedGenerationEvent.setTargetType("QUESTION");
+                                feedGenerationEvent.setCreatedAt(response.getCreatedAt());
+
+                                kafkaEventProducer.publishFeedGenerationEvent(feedGenerationEvent);
+                            });
                 })
-                .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
-                           .doOnError(error -> System.out.println("Error creating question: " + error));
-
+                .doOnError(error -> System.out.println("Error creating question: " + error));
 
     }
 

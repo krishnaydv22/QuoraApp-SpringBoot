@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Document(collection = "Question")
+@EnableMongoAuditing
+
 public class Question {
 
     @Id
@@ -29,8 +32,11 @@ public class Question {
     @Size(min = 10, max = 1000, message = "Content must be between 10 and 1000 characters")
     private String content;
 
+
     @CreatedDate
     private LocalDateTime createdAt;
+
+    private String authorId;
 
     private Integer views;
 

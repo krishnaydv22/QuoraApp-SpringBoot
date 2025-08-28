@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 @Builder
 public class QuestionResponseDTO {
 
+    private String authorId;
+
+
     private String id;
 
     private String title;

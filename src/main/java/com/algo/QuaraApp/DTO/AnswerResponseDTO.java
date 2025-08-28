@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AnswerResponseDTO {
+
+    private String authorId;
+
     private String id;
 
     private String content;

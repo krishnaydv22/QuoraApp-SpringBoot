@@ -32,6 +32,7 @@ public class Answer {
     @Indexed
     private String questionId;
 
+    private String authorId;
 
     @CreatedDate
     @Indexed
